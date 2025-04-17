@@ -50,7 +50,10 @@ const StudentRecordsViewer = () => {
         };
 
         generateData();
+
     }, []);
+
+    console.log(students);
 
     // Filter students based on search
     const filteredStudents = students.filter(student =>

@@ -1,14 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 // Main Student Records Component
 const StudentRecordsViewer = () => {
     // State for student data and UI
     const [students, setStudents] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedStudent, setSelectedStudent] = useState(null);
-    const [recordsPerPage] = useState(10000);
+
+    // State for virtual scrolling
+    const [visibleStudents, setVisibleStudents] = useState([]);
+    const [startIndex, setStartIndex] = useState(0);
+    const tableRef = useRef(null);
+    const rowHeight = 53; // Approximate height of each row in pixels
+    const viewportHeight = 500; // Height of the table container
+    const bufferSize = 20; // Additional rows to render above and below the visible area
+    const visibleRowsCount = Math.ceil(viewportHeight / rowHeight) + bufferSize;
 
     // State for form handling
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -23,22 +30,41 @@ const StudentRecordsViewer = () => {
     });
     const [formMode, setFormMode] = useState('create');
 
-    // Generate some sample data
     useEffect(() => {
         const generateData = () => {
             const sampleData = [];
             const statusOptions = ['Active', 'On Leave', 'Graduated', 'Suspended'];
             const majorOptions = ['Computer Science', 'Business', 'Engineering', 'Psychology', 'Biology'];
+            const firstNames = ['John', 'Jane', 'Bob', 'Alice', 'Mike', 'Sarah', 'Tom', 'Emily'];
+            const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Miller', 'Davis', 'Garcia'];
+
+            const nameMap = new Map();
 
             for (let i = 0; i < 100000; i++) {
-                const firstName = ['John', 'Jane', 'Bob', 'Alice', 'Mike', 'Sarah', 'Tom', 'Emily'][Math.floor(Math.random() * 8)];
-                const lastName = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Miller', 'Davis', 'Garcia'][Math.floor(Math.random() * 8)];
+                const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+                const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+                const baseFullName = `${firstName} ${lastName}`;
+                let uniqueFullName = baseFullName;
+
+                let count = nameMap.get(baseFullName) || 0;
+
+                if (count > 0) {
+                    uniqueFullName = `${firstName} ${lastName} ${count}`;
+                }
+
+                nameMap.set(baseFullName, count + 1);
+
+                const emailBase = `${firstName.toLowerCase()}.${lastName.toLowerCase()}`;
+                const email = count > 0
+                    ? `${emailBase}${count}@university.edu`
+                    : `${emailBase}@university.edu`;
 
                 sampleData.push({
                     id: `S-${String(i + 1).padStart(5, '0')}`,
                     firstName,
                     lastName,
-                    email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@university.edu`,
+                    fullName: uniqueFullName,
+                    email,
                     major: majorOptions[Math.floor(Math.random() * majorOptions.length)],
                     gpa: parseFloat((Math.random() * 3 + 1).toFixed(2)),
                     status: statusOptions[Math.floor(Math.random() * statusOptions.length)]
@@ -52,6 +78,7 @@ const StudentRecordsViewer = () => {
         generateData();
     }, []);
 
+
     // Filter students based on search
     const filteredStudents = students.filter(student =>
         student.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -62,10 +89,36 @@ const StudentRecordsViewer = () => {
         student.status.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Get current page of students
-    const indexOfLastRecord = currentPage * recordsPerPage;
-    const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
-    const currentStudents = filteredStudents.slice(indexOfFirstRecord, indexOfLastRecord);
+    // Handle scroll events to update visible students
+    const handleScroll = useCallback(() => {
+        if (tableRef.current) {
+            const scrollTop = tableRef.current.scrollTop;
+            const newStartIndex = Math.max(0, Math.floor(scrollTop / rowHeight) - bufferSize);
+
+            setStartIndex(newStartIndex);
+        }
+    }, [rowHeight, bufferSize]);
+
+    // Update visible students when filtered data or scroll position changes
+    useEffect(() => {
+        const endIndex = Math.min(startIndex + visibleRowsCount, filteredStudents.length);
+        setVisibleStudents(filteredStudents.slice(startIndex, endIndex));
+    }, [filteredStudents, startIndex, visibleRowsCount]);
+
+    // Add scroll event listener
+    useEffect(() => {
+        const tableElement = tableRef.current;
+        if (tableElement) {
+            tableElement.addEventListener('scroll', handleScroll);
+            return () => tableElement.removeEventListener('scroll', handleScroll);
+        }
+    }, [handleScroll]);
+
+    // Calculate the total height of all rows
+    const totalHeight = filteredStudents.length * rowHeight;
+
+    // Calculate the offset for the visible rows
+    const offsetY = startIndex * rowHeight;
 
     // Handle opening the create form
     const handleCreate = () => {
@@ -130,9 +183,6 @@ const StudentRecordsViewer = () => {
         }
     };
 
-    // Handle pagination
-    const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
     if (loading) {
         return <div className="text-center p-8 text-xl">Loading...</div>;
     }
@@ -157,7 +207,10 @@ const StudentRecordsViewer = () => {
                             value={searchTerm}
                             onChange={(e) => {
                                 setSearchTerm(e.target.value);
-                                setCurrentPage(1);
+                                setStartIndex(0);
+                                if (tableRef.current) {
+                                    tableRef.current.scrollTop = 0;
+                                }
                             }}
                         />
                         <button
@@ -169,129 +222,89 @@ const StudentRecordsViewer = () => {
                     </div>
                 </div>
 
-                {/* Students Table with Fixed Height */}
+                {/* Students Table with Virtual Scrolling */}
                 <div className="bg-white rounded-lg shadow mb-6">
-                    <div className="overflow-hidden" style={{ height: "500px" }}>
-                        <div className="overflow-y-auto h-full">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50 sticky top-0">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Major</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">GPA</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                                </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                {currentStudents.length > 0 ? (
-                                    currentStudents.map((student) => (
-                                        <tr
-                                            key={student.id}
-                                            className={`hover:bg-gray-50 ${selectedStudent?.id === student.id ? 'bg-blue-50' : ''}`}
-                                            onClick={() => setSelectedStudent(student === selectedStudent ? null : student)}
-                                        >
-                                            <td className="px-6 py-4 whitespace-nowrap">{student.id}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap">{student.firstName} {student.lastName}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap">{student.email}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap">{student.major}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap">{student.gpa.toFixed(2)}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                            ${student.status === 'Active' ? 'bg-green-100 text-green-800' :
-                              student.status === 'On Leave' ? 'bg-yellow-100 text-yellow-800' :
-                                  student.status === 'Graduated' ? 'bg-blue-100 text-blue-800' :
-                                      'bg-red-100 text-red-800'}`}
-                          >
-                            {student.status}
-                          </span>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleEdit(student);
-                                                    }}
-                                                    className="text-blue-600 hover:text-blue-900 mr-3"
-                                                >
-                                                    Edit
-                                                </button>
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleDelete(student.id);
-                                                    }}
-                                                    className="text-red-600 hover:text-red-900"
-                                                >
-                                                    Delete
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))
-                                ) : (
+                    <div className="overflow-hidden" style={{ height: `${viewportHeight}px` }}>
+                        <div
+                            ref={tableRef}
+                            className="overflow-y-auto h-full"
+                            onScroll={handleScroll}
+                        >
+                            <div style={{ height: `${totalHeight}px`, position: 'relative' }}>
+                                <table className="min-w-full divide-y divide-gray-200" style={{ position: 'absolute', top: `${offsetY}px`, width: '100%' }}>
+                                    <thead className="bg-gray-50 sticky top-0 z-10">
                                     <tr>
-                                        <td colSpan="7" className="px-6 py-4 text-center">No students found</td>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Major</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">GPA</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                     </tr>
-                                )}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody className="bg-white divide-y divide-gray-200">
+                                    {visibleStudents.length > 0 ? (
+                                        visibleStudents.map((student) => (
+                                            <tr
+                                                key={student.id}
+                                                className={`hover:bg-gray-50 ${selectedStudent?.id === student.id ? 'bg-blue-50' : ''}`}
+                                                onClick={() => setSelectedStudent(student === selectedStudent ? null : student)}
+                                            >
+                                                <td className="px-6 py-4 whitespace-nowrap">{student.id}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap">{student.firstName} {student.lastName}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap">{student.email}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap">{student.major}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap">{student.gpa.toFixed(2)}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                                            ${student.status === 'Active' ? 'bg-green-100 text-green-800' :
+                                                            student.status === 'On Leave' ? 'bg-yellow-100 text-yellow-800' :
+                                                                student.status === 'Graduated' ? 'bg-blue-100 text-blue-800' :
+                                                                    'bg-red-100 text-red-800'}`}
+                                                        >
+                                                            {student.status}
+                                                        </span>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleEdit(student);
+                                                        }}
+                                                        className="text-blue-600 hover:text-blue-900 mr-3"
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleDelete(student.id);
+                                                        }}
+                                                        className="text-red-600 hover:text-red-900"
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan="7" className="px-6 py-4 text-center">No students found</td>
+                                        </tr>
+                                    )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Pagination */}
-                    <div className="px-6 py-3 flex items-center justify-between border-t border-gray-200">
-                        <div>
-                            <p className="text-sm text-gray-700">
-                                Showing <span className="font-medium">{indexOfFirstRecord + 1}</span> to{" "}
-                                <span className="font-medium">
-                  {Math.min(indexOfLastRecord, filteredStudents.length)}
-                </span>{" "}
-                                of <span className="font-medium">{filteredStudents.length}</span> results
-                            </p>
-                        </div>
-                        <div>
-                            <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                                <button
-                                    onClick={() => paginate(currentPage - 1)}
-                                    disabled={currentPage === 1}
-                                    className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ${
-                                        currentPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:bg-gray-50'
-                                    }`}
-                                >
-                                    Previous
-                                </button>
-
-                                {Array.from({ length: Math.ceil(filteredStudents.length / recordsPerPage) }).map((_, index) => (
-                                    (index + 1 <= 3 || index + 1 >= Math.ceil(filteredStudents.length / recordsPerPage) - 2 || Math.abs(index + 1 - currentPage) <= 1) && (
-                                        <button
-                                            key={index}
-                                            onClick={() => paginate(index + 1)}
-                                            className={`relative inline-flex items-center px-4 py-2 border ${
-                                                currentPage === index + 1
-                                                    ? 'bg-blue-50 border-blue-500 text-blue-600'
-                                                    : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                                            } text-sm font-medium`}
-                                        >
-                                            {index + 1}
-                                        </button>
-                                    )
-                                ))}
-
-                                <button
-                                    onClick={() => paginate(currentPage + 1)}
-                                    disabled={currentPage === Math.ceil(filteredStudents.length / recordsPerPage)}
-                                    className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ${
-                                        currentPage === Math.ceil(filteredStudents.length / recordsPerPage)
-                                            ? 'text-gray-300 cursor-not-allowed'
-                                            : 'text-gray-500 hover:bg-gray-50'
-                                    }`}
-                                >
-                                    Next
-                                </button>
-                            </nav>
-                        </div>
+                    {/* Records count info */}
+                    <div className="px-6 py-3 border-t border-gray-200">
+                        <p className="text-sm text-gray-700">
+                            Showing <span className="font-medium">{filteredStudents.length}</span> records
+                            {searchTerm && ` (filtered from ${students.length} total records)`}
+                        </p>
                     </div>
                 </div>
 
@@ -339,7 +352,7 @@ const StudentRecordsViewer = () => {
 
             {/* Create/Edit Modal */}
             {isModalOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="fixed inset-0 bg-[#0000009c] bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white rounded-lg shadow p-6 w-full max-w-lg">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-xl font-bold">

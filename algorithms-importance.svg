@@ -1,0 +1,90 @@
+<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="800" height="600" fill="#f8f9fa" rx="10" ry="10" />
+  
+  <!-- Title -->
+  <text x="400" y="40" font-family="Arial" font-size="24" text-anchor="middle" font-weight="bold">Why Algorithms Matter: Performance Optimization</text>
+  
+  <!-- Main diagram sections -->
+  <rect x="50" y="70" width="700" height="480" fill="#ffffff" stroke="#cccccc" stroke-width="1" rx="8" ry="8" />
+  
+  <!-- Comparison headers -->
+  <rect x="50" y="70" width="350" height="50" fill="#e6f7ff" stroke="#1890ff" stroke-width="1" rx="8" ry="8" />
+  <rect x="400" y="70" width="350" height="50" fill="#fff2e8" stroke="#fa541c" stroke-width="1" rx="8" ry="8" />
+  
+  <text x="225" y="100" font-family="Arial" font-size="18" text-anchor="middle" font-weight="bold" fill="#0050b3">Virtual Scrolling (With Algorithms)</text>
+  <text x="575" y="100" font-family="Arial" font-size="18" text-anchor="middle" font-weight="bold" fill="#ad2102">Traditional Pagination (Without Algorithms)</text>
+  
+  <!-- Memory usage visualization -->
+  <text x="400" y="150" font-family="Arial" font-size="16" text-anchor="middle" font-weight="bold">Memory Usage</text>
+  
+  <!-- Virtual Scrolling memory bars -->
+  <rect x="100" y="170" width="250" height="60" fill="#f0f5ff" stroke="#1890ff" stroke-width="1" rx="4" ry="4" />
+  <rect x="100" y="170" width="40" height="60" fill="#1890ff" rx="4" ry="4" />
+  <text x="225" y="205" font-family="Arial" font-size="14" text-anchor="middle">Only renders ~20 visible rows</text>
+  <text x="120" y="205" font-family="Arial" font-size="14" text-anchor="middle" fill="white">5%</text>
+  
+  <!-- Traditional Pagination memory bars -->
+  <rect x="450" y="170" width="250" height="60" fill="#fff2e8" stroke="#fa541c" stroke-width="1" rx="4" ry="4" />
+  <rect x="450" y="170" width="250" height="60" fill="#fa541c" rx="4" ry="4" />
+  <text x="575" y="205" font-family="Arial" font-size="14" text-anchor="middle" fill="white">Renders all 10,000 page rows</text>
+  <text x="575" y="225" font-family="Arial" font-size="14" text-anchor="middle" fill="white">100%</text>
+  
+  <!-- CPU usage visualization -->
+  <text x="400" y="260" font-family="Arial" font-size="16" text-anchor="middle" font-weight="bold">Algorithmic Complexity</text>
+  
+  <!-- Big O notation -->
+  <rect x="100" y="280" width="250" height="60" fill="#f0f5ff" stroke="#1890ff" stroke-width="1" rx="4" ry="4" />
+  <text x="225" y="310" font-family="Arial" font-size="18" text-anchor="middle" font-weight="bold">O(1)</text>
+  <text x="225" y="330" font-family="Arial" font-size="14" text-anchor="middle">Constant time rendering</text>
+  
+  <rect x="450" y="280" width="250" height="60" fill="#fff2e8" stroke="#fa541c" stroke-width="1" rx="4" ry="4" />
+  <text x="575" y="310" font-family="Arial" font-size="18" text-anchor="middle" font-weight="bold">O(n)</text>
+  <text x="575" y="330" font-family="Arial" font-size="14" text-anchor="middle">Linear time rendering</text>
+  
+  <!-- Algorithm visualization -->
+  <text x="400" y="370" font-family="Arial" font-size="16" text-anchor="middle" font-weight="bold">Key Algorithms Used</text>
+  
+  <!-- Virtual scrolling algorithms -->
+  <rect x="70" y="390" width="310" height="140" fill="#f0f5ff" stroke="#1890ff" stroke-width="1" rx="4" ry="4" />
+  <text x="225" y="410" font-family="Arial" font-size="14" text-anchor="middle" font-weight="bold">Window Calculation Algorithm</text>
+  <text x="80" y="430" font-family="Arial" font-size="13">• startIndex = Math.floor(scrollTop / rowHeight)</text>
+  <text x="80" y="450" font-family="Arial" font-size="13">• visibleRowsCount = viewportHeight / rowHeight</text>
+  <text x="80" y="470" font-family="Arial" font-size="13">• offsetY = startIndex * rowHeight</text>
+  <text x="80" y="490" font-family="Arial" font-size="13">• visibleStudents = students.slice(startIndex, </text>
+  <text x="90" y="510" font-family="Arial" font-size="13">  startIndex + visibleRowsCount + bufferSize)</text>
+  
+  <!-- Pagination non-algorithms -->
+  <rect x="420" y="390" width="310" height="140" fill="#fff2e8" stroke="#fa541c" stroke-width="1" rx="4" ry="4" />
+  <text x="575" y="410" font-family="Arial" font-size="14" text-anchor="middle" font-weight="bold">Simple Pagination Logic</text>
+  <text x="430" y="430" font-family="Arial" font-size="13">• indexOfLastRecord = currentPage * recordsPerPage</text>
+  <text x="430" y="450" font-family="Arial" font-size="13">• indexOfFirstRecord = indexOfLastRecord - </text>
+  <text x="440" y="470" font-family="Arial" font-size="13">  recordsPerPage</text>
+  <text x="430" y="490" font-family="Arial" font-size="13">• currentStudents = filteredStudents.slice(</text>
+  <text x="440" y="510" font-family="Arial" font-size="13">  indexOfFirstRecord, indexOfLastRecord)</text>
+  
+  <!-- Scalability visualization -->
+  <text x="400" y="550" font-family="Arial" font-size="16" text-anchor="middle" font-weight="bold">Performance at Scale</text>
+  
+  <!-- Performance graph -->
+  <line x1="150" y1="590" x2="650" y2="590" stroke="#666" stroke-width="1.5" />
+  <text x="150" y="605" font-family="Arial" font-size="12" text-anchor="middle">1K</text>
+  <text x="270" y="605" font-family="Arial" font-size="12" text-anchor="middle">10K</text>
+  <text x="400" y="605" font-family="Arial" font-size="12" text-anchor="middle">100K</text>
+  <text x="530" y="605" font-family="Arial" font-size="12" text-anchor="middle">1M</text>
+  <text x="650" y="605" font-family="Arial" font-size="12" text-anchor="middle">10M</text>
+  
+  <!-- Performance lines -->
+  <polyline points="150,585 270,585 400,585 530,585 650,585" 
+            fill="none" stroke="#1890ff" stroke-width="2.5" />
+            
+  <polyline points="150,585 270,580 400,560 530,520 650,460" 
+            fill="none" stroke="#fa541c" stroke-width="2.5" />
+            
+  <!-- Legend -->
+  <rect x="180" y="565" width="10" height="10" fill="#1890ff" />
+  <text x="195" y="573.5" font-family="Arial" font-size="11">Virtual Scrolling</text>
+  
+  <rect x="290" y="565" width="10" height="10" fill="#fa541c" />
+  <text x="305" y="573.5" font-family="Arial" font-size="11">Traditional Pagination</text>
+</svg>

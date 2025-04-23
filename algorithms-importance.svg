@@ -1,6 +1,6 @@
-<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 800 650" xmlns="http://www.w3.org/2000/svg">
   <!-- Background -->
-  <rect width="800" height="600" fill="#f8f9fa" rx="10" ry="10" />
+  <rect width="800" height="650" fill="#f8f9fa" rx="10" ry="10" />
   
   <!-- Title -->
   <text x="400" y="40" font-family="Arial" font-size="24" text-anchor="middle" font-weight="bold">Why Algorithms Matter: Performance Optimization</text>
@@ -64,27 +64,27 @@
   <text x="440" y="510" font-family="Arial" font-size="13">  indexOfFirstRecord, indexOfLastRecord)</text>
   
   <!-- Scalability visualization -->
-  <text x="400" y="550" font-family="Arial" font-size="16" text-anchor="middle" font-weight="bold">Performance at Scale</text>
+  <text x="400" y="568" font-family="Arial" font-size="16" text-anchor="middle" font-weight="bold">Performance at Scale</text>
   
   <!-- Performance graph -->
-  <line x1="150" y1="590" x2="650" y2="590" stroke="#666" stroke-width="1.5" />
-  <text x="150" y="605" font-family="Arial" font-size="12" text-anchor="middle">1K</text>
-  <text x="270" y="605" font-family="Arial" font-size="12" text-anchor="middle">10K</text>
-  <text x="400" y="605" font-family="Arial" font-size="12" text-anchor="middle">100K</text>
-  <text x="530" y="605" font-family="Arial" font-size="12" text-anchor="middle">1M</text>
-  <text x="650" y="605" font-family="Arial" font-size="12" text-anchor="middle">10M</text>
+  <line x1="150" y1="613" x2="650" y2="613" stroke="#666" stroke-width="1.5" />
+  <text x="150" y="635" font-family="Arial" font-size="12" text-anchor="middle">1K</text>
+  <text x="270" y="635" font-family="Arial" font-size="12" text-anchor="middle">10K</text>
+  <text x="400" y="635" font-family="Arial" font-size="12" text-anchor="middle">100K</text>
+  <text x="530" y="635" font-family="Arial" font-size="12" text-anchor="middle">1M</text>
+  <text x="650" y="635" font-family="Arial" font-size="12" text-anchor="middle">10M</text>
   
   <!-- Performance lines -->
-  <polyline points="150,585 270,585 400,585 530,585 650,585" 
+  <polyline points="150,608 270,608 400,608 530,608 650,608"
             fill="none" stroke="#1890ff" stroke-width="2.5" />
             
-  <polyline points="150,585 270,580 400,560 530,520 650,460" 
+  <polyline points="150,600 270,595 400,575 530,535 650,475"
             fill="none" stroke="#fa541c" stroke-width="2.5" />
             
   <!-- Legend -->
-  <rect x="180" y="565" width="10" height="10" fill="#1890ff" />
-  <text x="195" y="573.5" font-family="Arial" font-size="11">Virtual Scrolling</text>
+  <rect x="180" y="578" width="10" height="10" fill="#1890ff" />
+  <text x="195" y="585" font-family="Arial" font-size="11">Virtual Scrolling</text>
   
-  <rect x="290" y="565" width="10" height="10" fill="#fa541c" />
-  <text x="305" y="573.5" font-family="Arial" font-size="11">Traditional Pagination</text>
+  <rect x="290" y="578" width="10" height="10" fill="#fa541c" />
+  <text x="305" y="585" font-family="Arial" font-size="11">Traditional Pagination</text>
 </svg>
